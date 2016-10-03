@@ -11,7 +11,6 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -39,7 +38,7 @@ public class Word2VecDataSet {
 
         log.info("Building model....");
         Word2Vec vec = new Word2Vec.Builder()
-                .minWordFrequency(5)
+                .minWordFrequency(1)
                 .iterations(1)
                 .layerSize(100)
                 .seed(42)
@@ -54,12 +53,15 @@ public class Word2VecDataSet {
         log.info("Writing word vectors to text file....");
 
         // Write word vectors
-        WordVectorSerializer.writeWordVectors(vec, outputFile);
+        //WordVectorSerializer.writeWordVectors(vec, outputFile);
+        WordVectorSerializer.writeFullModel(vec, outputFile);
+
     }
 
     public static WeightLookupTable lookupTable(String modelFile) {
         try {
-            Word2Vec word2vec = WordVectorSerializer.readWord2Vec(new File(modelFile));
+            //Word2Vec word2vec = WordVectorSerializer.readWord2Vec(new File(modelFile));
+            Word2Vec word2vec = WordVectorSerializer.loadFullModel(modelFile);
             return word2vec.lookupTable();
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package br.com.pucpr.tcc;
 
 import br.com.pucpr.tcc.util.DataSetUtils;
+import br.com.pucpr.tcc.util.Model;
 import br.com.pucpr.tcc.util.Word2VecDataSet;
 
 import java.io.IOException;
@@ -63,6 +64,32 @@ public class SentimentAnalysisApp {
 
                         Word2VecDataSet word2vec = new Word2VecDataSet(trainFile, outputFile);
                         word2vec.train();
+                    }
+                    break;
+                    case "-create-train-dataset": {
+                        if (args.length < 7) {
+                            throw new RuntimeException("See usage");
+                        }
+
+                        String word2vecModel = null;
+                        String outputPath = null;
+                        String datasetPath = null;
+
+                        for (int j = i + 1; j < args.length; j += 2) { //ignoring the first argument
+                            if ("--i".equals(args[j])) {
+                                word2vecModel = args[j + 1];
+                            } else if ("--o".equals(args[j])) {
+                                outputPath = args[j + 1];
+                            } else if ("--d".equals(args[j])) {
+                                datasetPath = args[j + 1];
+                            }
+                        }
+                        if (word2vecModel == null || outputPath == null || datasetPath == null) {
+                            throw new RuntimeException("See usage");
+                        }
+
+                        Model model = new Model(word2vecModel, outputPath);
+                        model.generateFile(datasetPath);
                     }
                     break;
                 }
