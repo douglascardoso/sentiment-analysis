@@ -38,7 +38,7 @@ public class Word2VecDataSet {
 
         log.info("Building model....");
         Word2Vec vec = new Word2Vec.Builder()
-                .minWordFrequency(1)
+                .minWordFrequency(5)
                 .iterations(1)
                 .layerSize(100)
                 .seed(42)

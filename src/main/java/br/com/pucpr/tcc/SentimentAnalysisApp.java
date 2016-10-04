@@ -89,7 +89,7 @@ public class SentimentAnalysisApp {
                         }
 
                         Model model = new Model(word2vecModel, outputPath);
-                        model.generateFile(datasetPath);
+                        model.generateFile(datasetPath, 100);
                     }
                     break;
                 }

@@ -18,13 +18,13 @@ public class Model {
         output = createFile(outputPath);
     }
 
-    public void generateFile(String filePath) {
+    public void generateFile(String filePath, int window) {
         BufferedReader file = openFile(filePath);
 
         try {
             for (int i = 0; file.ready(); i++) {
                 String tweet = file.readLine();
-                parseTweet(tweet);
+                parseTweet(tweet, window);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -32,19 +32,34 @@ public class Model {
 
     }
 
-    private void parseTweet(String tweet) {
+    public void parseTweet(String tweet, int window) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] tokens = tweet.split("\t");
         int label = parseClass(tokens[0]);
         stringBuilder.append(label);
+        tokens[1] = cleanString(tokens[1]);
         String[] words = tokens[1].split(" ");
 
-        for (String word : words) {
-            INDArray features = lookuptable.vector(word);
-            if (features != null) {
-                for (int i = 0; i < features.length(); i++) {
+        for (int i = 0; i < window; i++) {
+            if (i < words.length) {
+                String word = words[i];
+                INDArray features = lookuptable.vector(word);
+                if (features != null) {
+                    for (int j = 0; j < features.length(); j++) {
+                        stringBuilder.append(",");
+                        stringBuilder.append(features.getDouble(j));
+                    }
+                    System.out.println("aaa");
+                } else {
+                    for (int j = 0; j < 100; j++) {
+                        stringBuilder.append(",");
+                        stringBuilder.append(Math.random());
+                    }
+                }
+            } else {
+                for (int j = 0; j < 100; j++) {
                     stringBuilder.append(",");
-                    stringBuilder.append(features.getDouble(i));
+                    stringBuilder.append(Math.random());
                 }
             }
         }
@@ -56,6 +71,24 @@ public class Model {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private String cleanString(String str) {
+        str = str.toLowerCase();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            int ascii = (int) str.charAt(i);
+            if (ascii >= 97 && ascii <= 122) {
+                stringBuilder.append(str.charAt(i));
+            } else if (ascii == 32) {
+                stringBuilder.append(str.charAt(i));
+            } else if (ascii == 35) {
+                stringBuilder.append(str.charAt(i));
+            } else if (ascii == 64) {
+                stringBuilder.append(str.charAt(i));
+            }
+        }
+        return stringBuilder.toString();
     }
 
     private int parseClass(String clazz) {
