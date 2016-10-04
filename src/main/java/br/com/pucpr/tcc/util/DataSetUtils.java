@@ -77,8 +77,24 @@ public class DataSetUtils {
                 for (int i = 0; match.find(); i++) {
                     tokens[5] = tokens[5].replace(match.group(i), "");
                 }
+
+                tokens[5] = tokens[5].toLowerCase();
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < tokens[5].length(); i++) {
+                    int ascii = (int) tokens[5].charAt(i);
+                    if (ascii >= 97 && ascii <= 122) {
+                        stringBuilder.append(tokens[5].charAt(i));
+                    } else if (ascii == 32) {
+                        stringBuilder.append(tokens[5].charAt(i));
+                    } else if (ascii == 35) {
+                        stringBuilder.append(tokens[5].charAt(i));
+                    } else if (ascii == 64) {
+                        stringBuilder.append(tokens[5].charAt(i));
+                    }
+                }
+
                 //String.format("%s", line);
-                newLines.add(tokens[5].replace("\"", ""));
+                newLines.add(stringBuilder.toString());
             });
             return newLines;
         };
