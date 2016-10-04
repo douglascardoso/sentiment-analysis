@@ -1,6 +1,7 @@
 package br.com.pucpr.br.util;
 
 import br.com.pucpr.tcc.util.Model;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -10,6 +11,7 @@ public class ModelTest {
 
 
     @Test
+    @Ignore
     public void testModelGeneration() throws Exception {
 
         Model model = new Model("/home/douglas/Desktop/word2vec.txt", "/home/douglas/Desktop/trainTest.csv");
