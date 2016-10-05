@@ -114,6 +114,11 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
