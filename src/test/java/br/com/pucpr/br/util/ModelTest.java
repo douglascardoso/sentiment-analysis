@@ -15,16 +15,15 @@ public class ModelTest {
     public void testModelGeneration() throws Exception {
 
         Model model = new Model("/home/douglas/Desktop/word2vec.txt", "/home/douglas/Desktop/trainTest.csv");
+        model.generateFile("/home/douglas/PUCPR/tcc/sentiment-analysis/src/main/resources/semeval/train.tsv", 100);
 
-        String tweet = "positive\tMusical awareness: Great Big Beautiful Tomorrow has an ending, Now is the time does not";
+        //String tweet = "positive\t123123qsdasdasdsa Musical awareness: Great Big Beautiful Tomorrow has an ending, Now is the time does not";
 
-        System.out.println((int) tweet.charAt(0));
-
-
-        model.parseTweet(tweet, 100);
-        //System.out.println();
-
-
+//        System.out.println((int) tweet.charAt(0));
+//
+//        model.parseTweet(tweet, 100);
+//        List<Tweet> tweets = model.getTweets();
+//        System.out.println(tweets);
     }
 
 }

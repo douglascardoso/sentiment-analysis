@@ -50,6 +50,8 @@ public class Word2VecDataSet {
         log.info("Fitting Word2Vec model....");
         vec.fit();
 
+        //vec.ne
+
         log.info("Writing word vectors to text file....");
 
         // Write word vectors

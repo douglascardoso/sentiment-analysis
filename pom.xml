@@ -125,6 +125,7 @@
                 <configuration>
                     <archive>
                         <manifest>
+                            <addClasspath>true</addClasspath>
                             <mainClass>br.com.pucpr.tcc.SentimentAnalysisApp</mainClass>
                         </manifest>
                     </archive>
