@@ -3,6 +3,8 @@ package br.com.pucpr.tcc;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.spi.LoggerFactory;
+import org.slf4j.Logger;
 
 import br.com.pucpr.tcc.util.DataSetUtils;
 import br.com.pucpr.tcc.util.Word2VecDataSet;
@@ -11,7 +13,9 @@ import br.com.pucpr.tcc.util.Word2VecDataSet;
  * Created by douglas on 9/29/16.
  */
 public class SentimentAnalysisApp {
-
+	
+	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(SentimentAnalysisApp.class);
+	
 	public static final void main(String[] args) throws IOException {
 
 		if (args.length > 0) {
@@ -75,23 +79,27 @@ public class SentimentAnalysisApp {
 				}
 					break;
 				case "-train": {
-					if (args.length < 6) {
+					if (args.length < 8) {
 						throw new RuntimeException("See usage");
 					}
-
+					
 					String trainFile = null;
 					String validationFile = null;
 					String outputFile = null;
 					String modelFile = null;
 
-					for (int j = i + 1; j < (i + 6) && j < args.length; j += 2) {
+					for (int j = i + 1; j < (i + 8) && j < args.length; j += 2) {
 						if ("--i".equals(args[j])) {
+							logger.debug("Train file: {}", args[j + 1]);
 							trainFile = args[j + 1];
 						} else if ("--o".equals(args[j])) {
+							logger.debug("Output file: {}", args[j + 1]);
 							outputFile = args[j + 1];
 						} else if ("--m".equals(args[j])) {
+							logger.debug("Model file: {}", args[j + 1]);
 							modelFile = args[j + 1];
 						} else if ("--v".equals(args[j])) {
+							logger.debug("Validation file: {}", args[j + 1]);
 							validationFile = args[j + 1];
 						}
 					}
