@@ -1,15 +1,15 @@
 package br.com.pucpr.tcc.model;
 
-import java.util.Arrays;
+import org.nd4j.linalg.api.ndarray.INDArray;
 
 /**
- * Created by douglas on 10/9/16.
+ * Created by douglas on 10/13/16.
  */
 public class Tweet {
 
     private int label;
 
-    private double[][] features;
+    private INDArray features;
 
     public int getLabel() {
         return label;
@@ -19,19 +19,11 @@ public class Tweet {
         this.label = label;
     }
 
-    public double[][] getFeatures() {
+    public INDArray getFeatures() {
         return features;
     }
 
-    public void setFeatures(double[][] features) {
+    public void setFeatures(INDArray features) {
         this.features = features;
-    }
-
-    @Override
-    public String toString() {
-        return "Tweet{" +
-                "label=" + label +
-                ", features=" + Arrays.toString(features) +
-                '}';
     }
 }

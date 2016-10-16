@@ -1,11 +1,13 @@
 package br.com.pucpr.tcc;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
@@ -21,6 +23,7 @@ import org.deeplearning4j.nn.conf.layers.setup.ConvolutionLayerSetup;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -30,6 +33,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.com.pucpr.tcc.model.Tweet;
 import br.com.pucpr.tcc.util.Word2VecDataSet;
 
 /**
@@ -39,27 +43,35 @@ public class GeneretaTraining {
 
 	private static final Logger log = LoggerFactory.getLogger(GeneretaTraining.class);
 
-	private WeightLookupTable lookuptable;
+	private WeightLookupTable<?> lookuptable;
+
+	private String trainPath;
+
+	private String validationPath;
 
 	public GeneretaTraining() {
+		// lookuptable = Word2VecDataSet.lookupTable();
+	}
 
-		lookuptable = Word2VecDataSet.lookupTable("/home/douglas/datasets/word2vec.txt");
-
+	public GeneretaTraining(String word2vecModelPath, String trainPath, String validationPath) {
+		lookuptable = Word2VecDataSet.lookupTable(word2vecModelPath);
+		this.trainPath = trainPath;
+		this.validationPath = validationPath;
 	}
 
 	public static void main(String[] args) throws IOException {
 
-		GeneretaTraining main = new GeneretaTraining();
-		main.run();
+		GeneretaTraining main = new GeneretaTraining("/home/douglas/datasets/word2vec.txt",
+				"/home/douglas/sentiment-analysis/src/main/resources/semeval/train.tsv",
+				"/home/douglas/sentiment-analysis/src/main/resources/semeval/validation.tsv");
+		main.run("");
 
 	}
 
-	public void run() throws IOException {
-		String filePath = "/home/douglas/sentiment-analysis/src/main/resources/semeval/train.tsv";
-		List<Tweet2> trainLines = readFile(filePath);
-
-		filePath = "/home/douglas/sentiment-analysis/src/main/resources/semeval/validation.tsv";
-		List<Tweet2> testLines = readFile(filePath);
+	public void run(String outputFile) throws IOException {
+		Scanner scanner = new Scanner(System.in);
+		List<Tweet> trainLines = readFile(trainPath);
+		List<Tweet> testLines = readFile(validationPath);
 
 		INDArray trainArray = Nd4j.zeros(trainLines.size(), 10000);
 		INDArray trainOutcomes = Nd4j.zeros(trainLines.size(), 2);
@@ -69,29 +81,32 @@ public class GeneretaTraining {
 
 		// Train
 		for (int i = 0; i < trainLines.size(); i++) {
-			Tweet2 tweet = trainLines.get(i);
+			Tweet tweet = trainLines.get(i);
 			trainOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(1);
 			trainArray.getRow(i).assign(tweet.getFeatures());
 		}
 
 		// Validation
 		for (int i = 0; i < testLines.size(); i++) {
-			Tweet2 tweet = testLines.get(i);
-			trainOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(1);
-			trainArray.getRow(i).assign(tweet.getFeatures());
+			Tweet tweet = testLines.get(i);
+			testOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(1);
+			testArray.getRow(i).assign(tweet.getFeatures());
 		}
 
 		System.gc();
 
 		int nChannels = 1;
 		int outputNum = 2;
-		int batchSize = 64;
+		int batchSize = 150;
 		int nEpochs = 10;
 		int iterations = 1;
 		int seed = 123;
 
 		DataSet train = new DataSet(trainArray, trainOutcomes);
 		DataSet test = new DataSet(testArray, testOutcomes);
+
+		train.shuffle();
+		test.shuffle();
 
 		DataSetIterator trainIterator = new SamplingDataSetIterator(train, batchSize, trainLines.size());
 		DataSetIterator testIterator = new SamplingDataSetIterator(test, batchSize, testLines.size());
@@ -145,13 +160,21 @@ public class GeneretaTraining {
 			}
 			log.info(eval.stats());
 			testIterator.reset();
+
+			System.out.println("Do you want to keep trainnig? Y(Yes) N(No)");
+			String answer = scanner.next();
+
+			if ("n".equalsIgnoreCase(answer.trim())) {
+				break;
+			}
 		}
-		log.info("****************Example finished********************");
+
+		ModelSerializer.writeModel(model, new File(outputFile), true);
 
 	}
 
-	public List<Tweet2> readFile(String path) {
-		List<Tweet2> lines = new ArrayList<>();
+	public List<Tweet> readFile(String path) {
+		List<Tweet> lines = new ArrayList<>();
 		BufferedReader file = null;
 		try {
 			file = new BufferedReader(new FileReader(path));
@@ -163,7 +186,7 @@ public class GeneretaTraining {
 			while (file.ready()) {
 				String line = file.readLine();
 				String[] tokens = line.split("\t");
-				Tweet2 tweet = parseTweet(tokens[1]);
+				Tweet tweet = parseTweet(tokens[1]);
 				tweet.setLabel(parseLabel(tokens[0]));
 				lines.add(tweet);
 			}
@@ -173,8 +196,8 @@ public class GeneretaTraining {
 		return lines;
 	}
 
-	private Tweet2 parseTweet(String line) {
-		Tweet2 tweet = new Tweet2();
+	private Tweet parseTweet(String line) {
+		Tweet tweet = new Tweet();
 
 		String[] tokens = line.split(" ");
 		INDArray array = null; // = Nd4j.zeros(10000); //max size
@@ -216,6 +239,9 @@ public class GeneretaTraining {
 	}
 
 	private int parseLabel(String line) {
+		if (line.equals("positive")) {
+			return 1;
+		}
 		return 0;
 	}
 

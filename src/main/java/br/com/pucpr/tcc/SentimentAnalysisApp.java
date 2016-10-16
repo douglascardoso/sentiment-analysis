@@ -2,8 +2,9 @@ package br.com.pucpr.tcc;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
+
 import br.com.pucpr.tcc.util.DataSetUtils;
-import br.com.pucpr.tcc.util.Model;
 import br.com.pucpr.tcc.util.Word2VecDataSet;
 
 /**
@@ -73,37 +74,35 @@ public class SentimentAnalysisApp {
 					word2vec.train();
 				}
 					break;
-				case "-create-train-dataset": {
-					if (args.length < 7) {
+				case "-train": {
+					if (args.length < 6) {
 						throw new RuntimeException("See usage");
 					}
 
-					String word2vecModel = null;
-					String outputPath = null;
-					String datasetPath = null;
+					String trainFile = null;
+					String validationFile = null;
+					String outputFile = null;
+					String modelFile = null;
 
-					for (int j = i + 1; j < args.length; j += 2) { // ignoring
-																	// the first
-																	// argument
+					for (int j = i + 1; j < (i + 6) && j < args.length; j += 2) {
 						if ("--i".equals(args[j])) {
-							word2vecModel = args[j + 1];
+							trainFile = args[j + 1];
 						} else if ("--o".equals(args[j])) {
-							outputPath = args[j + 1];
-						} else if ("--d".equals(args[j])) {
-							datasetPath = args[j + 1];
+							outputFile = args[j + 1];
+						} else if ("--m".equals(args[j])) {
+							modelFile = args[j + 1];
+						} else if ("--v".equals(args[j])) {
+							validationFile = args[j + 1];
 						}
 					}
-					if (word2vecModel == null || outputPath == null || datasetPath == null) {
+
+					if (StringUtils.isEmpty(trainFile) || StringUtils.isEmpty(validationFile)
+							|| StringUtils.isEmpty(outputFile) || StringUtils.isEmpty(modelFile)) {
 						throw new RuntimeException("See usage");
 					}
 
-					Model model = new Model(word2vecModel, outputPath);
-					model.generateFile(datasetPath, 100);
-				}
-					break;
-				case "-train": {
-					GeneretaTraining main = new GeneretaTraining();
-					main.run();
+					GeneretaTraining main = new GeneretaTraining(modelFile, trainFile, validationFile);
+					main.run(outputFile);
 				}
 					break;
 				}
