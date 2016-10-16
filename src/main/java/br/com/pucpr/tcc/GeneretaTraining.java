@@ -70,14 +70,14 @@ public class GeneretaTraining {
 		// Train
 		for (int i = 0; i < trainLines.size(); i++) {
 			Tweet2 tweet = trainLines.get(i);
-			trainOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(tweet.getLabel());
+			trainOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(1);
 			trainArray.getRow(i).assign(tweet.getFeatures());
 		}
 
 		// Validation
 		for (int i = 0; i < testLines.size(); i++) {
 			Tweet2 tweet = testLines.get(i);
-			trainOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(tweet.getLabel());
+			trainOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(1);
 			trainArray.getRow(i).assign(tweet.getFeatures());
 		}
 
