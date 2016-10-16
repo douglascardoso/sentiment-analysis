@@ -50,7 +50,6 @@ public class GeneretaTraining {
 	private String validationPath;
 
 	public GeneretaTraining() {
-		// lookuptable = Word2VecDataSet.lookupTable();
 	}
 
 	public GeneretaTraining(String word2vecModelPath, String trainPath, String validationPath) {
@@ -65,7 +64,40 @@ public class GeneretaTraining {
 				"/home/douglas/sentiment-analysis/src/main/resources/semeval/train.tsv",
 				"/home/douglas/sentiment-analysis/src/main/resources/semeval/validation.tsv");
 		main.run("");
+	}
 
+	public void test(String modelPath, String testPath) throws IOException {
+		int outputNum = 2;
+		int batchSize = 150;
+
+		List<Tweet> testLines = readFile(testPath);
+
+		INDArray testArray = Nd4j.zeros(testLines.size(), 10000);
+		INDArray testOutcomes = Nd4j.zeros(testLines.size(), 2);
+
+		DataSet test = new DataSet(testArray, testOutcomes);
+		
+		DataSetIterator testIterator = new SamplingDataSetIterator(test, batchSize, testLines.size());
+
+		// Test
+		for (int i = 0; i < testLines.size(); i++) {
+			Tweet tweet = testLines.get(i);
+			testOutcomes.getRow(i).getColumn(tweet.getLabel()).assign(1);
+			testArray.getRow(i).assign(tweet.getFeatures());
+		}
+
+		log.info("Loading model");
+		MultiLayerNetwork model = ModelSerializer.restoreMultiLayerNetwork(modelPath);
+		
+		log.info("Evaluate model....");
+		Evaluation eval = new Evaluation(outputNum);
+		while (testIterator.hasNext()) {
+			DataSet ds = testIterator.next();
+
+			INDArray output = model.output(ds.getFeatureMatrix(), false);
+			eval.eval(ds.getLabels(), output);
+		}
+		log.info(eval.stats());
 	}
 
 	public void run(String outputFile) throws IOException {
@@ -169,6 +201,7 @@ public class GeneretaTraining {
 			}
 		}
 
+		log.info("Saving the model {}", outputFile);
 		ModelSerializer.writeModel(model, new File(outputFile), true);
 
 	}
@@ -200,7 +233,7 @@ public class GeneretaTraining {
 		Tweet tweet = new Tweet();
 
 		String[] tokens = line.split(" ");
-		INDArray array = null; // = Nd4j.zeros(10000); //max size
+		INDArray array = null; // max size
 
 		int cont = 0;
 		for (String token : tokens) {

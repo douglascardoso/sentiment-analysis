@@ -13,9 +13,9 @@ import br.com.pucpr.tcc.util.Word2VecDataSet;
  * Created by douglas on 9/29/16.
  */
 public class SentimentAnalysisApp {
-	
+
 	private static final Logger logger = org.slf4j.LoggerFactory.getLogger(SentimentAnalysisApp.class);
-	
+
 	public static final void main(String[] args) throws IOException {
 
 		if (args.length > 0) {
@@ -82,7 +82,7 @@ public class SentimentAnalysisApp {
 					if (args.length < 8) {
 						throw new RuntimeException("See usage");
 					}
-					
+
 					String trainFile = null;
 					String validationFile = null;
 					String outputFile = null;
@@ -111,6 +111,34 @@ public class SentimentAnalysisApp {
 
 					GeneretaTraining main = new GeneretaTraining(modelFile, trainFile, validationFile);
 					main.run(outputFile);
+				}
+					break;
+				case "-test": {
+					if (args.length < 5) {
+						throw new RuntimeException("See usage");
+					}
+					
+					logger.info("Testing...");					
+					
+					String testFile = null;
+					String modelFile = null;
+
+					for (int j = i + 1; j < (i + 4) && j < args.length; j += 2) {
+						if ("--i".equals(args[j])) {
+							logger.debug("Train file: {}", args[j + 1]);
+							testFile = args[j + 1];
+						} else if ("--m".equals(args[j])) {
+							logger.debug("Model file: {}", args[j + 1]);
+							modelFile = args[j + 1];
+						}
+					}
+
+					if (StringUtils.isEmpty(testFile) || StringUtils.isEmpty(modelFile)) {
+						throw new RuntimeException("See usage");
+					}
+
+					GeneretaTraining main = new GeneretaTraining();
+					main.test(modelFile, testFile);
 				}
 					break;
 				}
