@@ -114,7 +114,7 @@ public class SentimentAnalysisApp {
 				}
 					break;
 				case "-test": {
-					if (args.length < 5) {
+					if (args.length < 7) {
 						throw new RuntimeException("See usage");
 					}
 					
@@ -122,22 +122,26 @@ public class SentimentAnalysisApp {
 					
 					String testFile = null;
 					String modelFile = null;
+					String word2vecFile = null;
 
-					for (int j = i + 1; j < (i + 4) && j < args.length; j += 2) {
+					for (int j = i + 1; j < (i + 6) && j < args.length; j += 2) {
 						if ("--i".equals(args[j])) {
 							logger.debug("Train file: {}", args[j + 1]);
 							testFile = args[j + 1];
 						} else if ("--m".equals(args[j])) {
 							logger.debug("Model file: {}", args[j + 1]);
 							modelFile = args[j + 1];
+						}else if ("--w".equals(args[j])) {
+							logger.debug("Model file: {}", args[j + 1]);
+							word2vecFile = args[j + 1];
 						}
 					}
 
-					if (StringUtils.isEmpty(testFile) || StringUtils.isEmpty(modelFile)) {
+					if (StringUtils.isEmpty(testFile) || StringUtils.isEmpty(modelFile) || StringUtils.isEmpty(word2vecFile)) {
 						throw new RuntimeException("See usage");
 					}
 
-					GeneretaTraining main = new GeneretaTraining();
+					GeneretaTraining main = new GeneretaTraining(word2vecFile);
 					main.test(modelFile, testFile);
 				}
 					break;

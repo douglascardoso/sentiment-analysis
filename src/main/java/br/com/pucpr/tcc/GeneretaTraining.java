@@ -49,7 +49,8 @@ public class GeneretaTraining {
 
 	private String validationPath;
 
-	public GeneretaTraining() {
+	public GeneretaTraining(String word2vecPath) {
+		lookuptable = Word2VecDataSet.lookupTable(word2vecPath);
 	}
 
 	public GeneretaTraining(String word2vecModelPath, String trainPath, String validationPath) {
@@ -76,7 +77,6 @@ public class GeneretaTraining {
 		INDArray testOutcomes = Nd4j.zeros(testLines.size(), 2);
 
 		DataSet test = new DataSet(testArray, testOutcomes);
-		
 		DataSetIterator testIterator = new SamplingDataSetIterator(test, batchSize, testLines.size());
 
 		// Test
@@ -88,7 +88,7 @@ public class GeneretaTraining {
 
 		log.info("Loading model");
 		MultiLayerNetwork model = ModelSerializer.restoreMultiLayerNetwork(modelPath);
-		
+
 		log.info("Evaluate model....");
 		Evaluation eval = new Evaluation(outputNum);
 		while (testIterator.hasNext()) {
