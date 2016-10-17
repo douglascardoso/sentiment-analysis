@@ -59,14 +59,6 @@ public class GeneretaTraining {
 		this.validationPath = validationPath;
 	}
 
-	public static void main(String[] args) throws IOException {
-
-		GeneretaTraining main = new GeneretaTraining("/home/douglas/datasets/word2vec.txt",
-				"/home/douglas/sentiment-analysis/src/main/resources/semeval/train.tsv",
-				"/home/douglas/sentiment-analysis/src/main/resources/semeval/validation.tsv");
-		main.run("");
-	}
-
 	public void test(String modelPath, String testPath) throws IOException {
 		int outputNum = 2;
 		int batchSize = 150;
