@@ -90,7 +90,9 @@ public class GeneretaTraining {
         int seed = 123;
 
         DataSet train = new DataSet(trainArray, trainOutcomes);
+        train.shuffle();
         DataSet test = new DataSet(testArray, testOutcomes);
+        test.shuffle();
 
         DataSetIterator trainIterator = new SamplingDataSetIterator(train, batchSize, trainLines.size());
         DataSetIterator testIterator = new SamplingDataSetIterator(test, batchSize, testLines.size());
