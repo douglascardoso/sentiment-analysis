@@ -1,14 +1,7 @@
 package br.com.pucpr.tcc;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
+import br.com.pucpr.tcc.model.Tweet;
+import br.com.pucpr.tcc.util.Word2VecDataSet;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -33,8 +26,10 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.com.pucpr.tcc.model.Tweet;
-import br.com.pucpr.tcc.util.Word2VecDataSet;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by douglas on 10/13/16.
@@ -48,6 +43,8 @@ public class GeneretaTraining {
     private String trainPath;
 
     private String validationPath;
+
+    private Integer arrayDimension = 25600; //160 x 160
 
     public GeneretaTraining(String word2vecPath) {
         lookuptable = Word2VecDataSet.lookupTable(word2vecPath);
@@ -65,7 +62,7 @@ public class GeneretaTraining {
 
         List<Tweet> testLines = readFile(testPath);
 
-        INDArray testArray = Nd4j.zeros(testLines.size(), 10000);
+        INDArray testArray = Nd4j.zeros(testLines.size(), arrayDimension);
         INDArray testOutcomes = Nd4j.zeros(testLines.size(), 2);
 
         DataSet test = new DataSet(testArray, testOutcomes);
@@ -97,10 +94,10 @@ public class GeneretaTraining {
         List<Tweet> trainLines = readFile(trainPath);
         List<Tweet> testLines = readFile(validationPath);
 
-        INDArray trainArray = Nd4j.zeros(trainLines.size(), 10000);
+        INDArray trainArray = Nd4j.zeros(trainLines.size(), arrayDimension);
         INDArray trainOutcomes = Nd4j.zeros(trainLines.size(), 2);
 
-        INDArray testArray = Nd4j.zeros(testLines.size(), 10000);
+        INDArray testArray = Nd4j.zeros(testLines.size(), arrayDimension);
         INDArray testOutcomes = Nd4j.zeros(testLines.size(), 2);
 
         // Train
@@ -119,8 +116,8 @@ public class GeneretaTraining {
 
         System.gc();
 
-        int nChannels = 1;
-        int outputNum = 2;
+        int nChannels = 1; //number of channels o the image
+        int outputNum = 2; //classes of the problem
         int batchSize = 150;
         int nEpochs = 10;
         int iterations = 1;
@@ -136,34 +133,17 @@ public class GeneretaTraining {
         DataSetIterator testIterator = new SamplingDataSetIterator(test, batchSize, testLines.size());
 
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder().seed(seed).iterations(iterations)
-                .regularization(true).l2(0.0005).learningRate(0.01)// .biasLearningRate(0.02)
-                // .learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
+                .regularization(true).l2(0.0005).learningRate(0.01)
                 .weightInit(WeightInit.XAVIER).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.NESTEROVS).momentum(0.9).list()
-                .layer(0,
-                        new ConvolutionLayer.Builder(5, 5)
-                                // nIn and nOut specify depth. nIn here is the
-                                // nChannels and nOut is the number of filters
-                                // to be applied
-                                .nIn(nChannels).stride(1, 1).nOut(20).activation("identity").build())
-                .layer(1,
-                        new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(2, 2)
-                                .build())
-                .layer(2,
-                        new ConvolutionLayer.Builder(5, 5)
-                                // Note that nIn need not be specified in later
-                                // layers
-                                .stride(1, 1).nOut(50).activation("identity").build())
-                .layer(3,
-                        new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(2, 2)
-                                .build())
-                .layer(4, new DenseLayer.Builder().activation("relu").nOut(500).build())
-                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nOut(outputNum)
-                        .activation("softmax").build())
+                .layer(0, new ConvolutionLayer.Builder(5, 5).nIn(nChannels).stride(1, 1).nOut(20).activation("relu").build())
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(1, 1).build())
+                .layer(2, new ConvolutionLayer.Builder(5, 5).stride(1, 1).nOut(50).activation("relu").build())
+                .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2).stride(1, 1).build())
+                .layer(4, new DenseLayer.Builder().activation("relu").nOut(500).dropOut(0.5).build())
+                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nOut(outputNum).activation("softmax").build())
                 .backprop(true).pretrain(false);
-        // The builder needs the dimensions of the image along with the number
-        // of channels. these are 28x28 images in one channel
-        new ConvolutionLayerSetup(builder, 100, 100, 1);
+        new ConvolutionLayerSetup(builder, 160, 160, 1);
 
         MultiLayerConfiguration conf = builder.build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
@@ -229,8 +209,11 @@ public class GeneretaTraining {
 
         int cont = 0;
         for (String token : tokens) {
-            if (cont >= 100)
+
+            if (cont >= 160) {
                 break;
+            }
+
             INDArray features = lookuptable.vector(token.toLowerCase());
 
             if (features != null) {
@@ -240,23 +223,20 @@ public class GeneretaTraining {
                     array = Nd4j.concat(1, array, features);
                 }
             } else {
-                if (array == null)
-                    array = Nd4j.zeros(1, 100);
-                else
-                    array = Nd4j.concat(1, array, Nd4j.zeros(1, 100));
+                if (array == null) {
+                    array = Nd4j.zeros(1, 160);
+                }
+                else {
+                    array = Nd4j.concat(1, array, Nd4j.zeros(1, 160));
+                }
             }
-
             cont++;
         }
 
-        if (cont < 100) {
-
-            for (int i = 0; i < 100 - cont; i++) {
-
-                array = Nd4j.concat(1, array, Nd4j.zeros(1, 100));
-
+        if (cont < 160) {
+            for (int i = 0; i < 160 - cont; i++) {
+                array = Nd4j.concat(1, array, Nd4j.zeros(1, 160));
             }
-
         }
 
         tweet.setFeatures(array);
