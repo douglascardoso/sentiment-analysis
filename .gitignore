@@ -5,3 +5,5 @@ sentiment-analysis.iml
 target/
 /src/main/resources/corpus_twitter/training.csv
 /src/main/resources/corpus_twitter/testdata.manual.2009.06.14.csv
+/.classpath
+/.project
