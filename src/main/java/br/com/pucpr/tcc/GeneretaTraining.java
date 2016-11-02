@@ -44,7 +44,7 @@ public class GeneretaTraining {
 
     private String validationPath;
 
-    private Integer arrayDimension = 25600; //160 x 160
+    private Integer arrayDimension = 16384; //160 x 160
 
     public GeneretaTraining(String word2vecPath) {
         lookuptable = Word2VecDataSet.lookupTable(word2vecPath);
@@ -143,7 +143,7 @@ public class GeneretaTraining {
                 .layer(4, new DenseLayer.Builder().activation("relu").nOut(500).dropOut(0.5).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nOut(outputNum).activation("softmax").build())
                 .backprop(true).pretrain(false);
-        new ConvolutionLayerSetup(builder, 160, 160, 1);
+        new ConvolutionLayerSetup(builder, 128, 128, 1);
 
         MultiLayerConfiguration conf = builder.build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
@@ -210,7 +210,7 @@ public class GeneretaTraining {
         int cont = 0;
         for (String token : tokens) {
 
-            if (cont >= 160) {
+            if (cont >= 128) {
                 break;
             }
 
@@ -224,18 +224,18 @@ public class GeneretaTraining {
                 }
             } else {
                 if (array == null) {
-                    array = Nd4j.zeros(1, 160);
+                    array = Nd4j.zeros(1, 128);
                 }
                 else {
-                    array = Nd4j.concat(1, array, Nd4j.zeros(1, 160));
+                    array = Nd4j.concat(1, array, Nd4j.zeros(1, 128));
                 }
             }
             cont++;
         }
 
-        if (cont < 160) {
-            for (int i = 0; i < 160 - cont; i++) {
-                array = Nd4j.concat(1, array, Nd4j.zeros(1, 160));
+        if (cont < 128) {
+            for (int i = 0; i < 128 - cont; i++) {
+                array = Nd4j.concat(1, array, Nd4j.zeros(1, 128));
             }
         }
 
