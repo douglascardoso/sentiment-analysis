@@ -40,7 +40,7 @@ public class Word2VecDataSet {
         Word2Vec vec = new Word2Vec.Builder()
                 .minWordFrequency(5)
                 .iterations(1)
-                .layerSize(100)
+                .layerSize(128)
                 .seed(42)
                 .windowSize(5)
                 .iterate(iter)

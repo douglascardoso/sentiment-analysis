@@ -44,7 +44,7 @@ public class GeneretaTraining {
 
     private String validationPath;
 
-    private Integer arrayDimension = 16384; //160 x 160
+    private Integer arrayDimension = 16384; //128 X 128
 
     public GeneretaTraining(String word2vecPath) {
         lookuptable = Word2VecDataSet.lookupTable(word2vecPath);
